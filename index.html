@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مهمتي اليوم - أداة إدارة المهام</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .task-form {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        .tasks-list {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .task-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .task-item:last-child {
+            border-bottom: none;
+        }
+        
+        .task-info h3 {
+            margin: 0 0 5px 0;
+        }
+        
+        .task-info p {
+            margin: 0;
+            color: #666;
+        }
+        
+        .task-priority {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: white;
+            margin-left: 10px;
+        }
+        
+        .high { background: #f44336; }
+        .medium { background: #ff9800; }
+        .low { background: #4CAF50; }
+        
+        .task-actions button {
+            margin-left: 5px;
+            font-size: 14px;
+        }
+        
+        .delete-btn {
+            background: #f44336;
+        }
+        
+        .delete-btn:hover {
+            background: #d32f2f;
+        }
+        
+        .completed {
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+        
+        @media (max-width: 600px) {
+            .task-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .task-actions {
+                margin-top: 10px;
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>مهمتي اليوم</h1>
+            <p>أداة بسيطة لتنظيم وإدارة مهامك اليومية</p>
+        </header>
+        
+        <div class="task-form">
+            <h2>إضافة مهمة جديدة</h2>
+            <form id="addTaskForm">
+                <div class="form-group">
+                    <label for="taskTitle">عنوان المهمة</label>
+                    <input type="text" id="taskTitle" required placeholder="ماذا تريد أن تفعل اليوم؟">
+                </div>
+                
+                <div class="form-group">
+                    <label for="taskDescription">وصف المهمة (اختياري)</label>
+                    <textarea id="taskDescription" rows="2" placeholder="تفاصيل إضافية عن المهمة..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="taskPriority">أولوية المهمة</label>
+                    <select id="taskPriority">
+                        <option value="high">عالية</option>
+                        <option value="medium" selected>متوسطة</option>
+                        <option value="low">منخفضة</option>
+                    </select>
+                </div>
+                
+                <button type="submit">إضافة المهمة</button>
+            </form>
+        </div>
+        
+        <div class="tasks-list">
+            <h2>قائمة المهام</h2>
+            <div id="tasksContainer">
+                <!-- المهام ستضاف هنا dynamically -->
+                <p id="noTasks">لا توجد مهام مضافة yet. أضف مهمتك الأولى!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // تحميل المهام من localStorage عند تحميل الصفحة
+            loadTasks();
+            
+            // إضافة مهمة جديدة عند submit النموذج
+            document.getElementById('addTaskForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const titleInput = document.getElementById('taskTitle');
+                const descriptionInput = document.getElementById('taskDescription');
+                const prioritySelect = document.getElementById('taskPriority');
+                
+                if (titleInput.value.trim() !== '') {
+                    addTask(titleInput.value, descriptionInput.value, prioritySelect.value);
+                    
+                    // مسح الحقول بعد الإضافة
+                    titleInput.value = '';
+                    descriptionInput.value = '';
+                    prioritySelect.value = 'medium';
+                }
+            });
+        });
+        
+        function addTask(title, description, priority) {
+            // إنشاء كائن المهمة
+            const task = {
+                id: Date.now(), // استخدام timestamp كمعرف فريد
+                title: title,
+                description: description,
+                priority: priority,
+                completed: false,
+                date: new Date().toLocaleDateString('ar-EG')
+            };
+            
+            // الحصول على المهام الحالية من localStorage
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            
+            // إضافة المهمة الجديدة
+            tasks.push(task);
+            
+            // حفظ المهام في localStorage
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            
+            // إعادة تحميل وعرض المهام
+            loadTasks();
+        }
+        
+        function loadTasks() {
+            const tasksContainer = document.getElementById('tasksContainer');
+            const noTasksMsg = document.getElementById('noTasks');
+            
+            // الحصول على المهام من localStorage
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            
+            // مسح container المهام
+            tasksContainer.innerHTML = '';
+            
+            if (tasks.length === 0) {
+                tasksContainer.appendChild(noTasksMsg);
+                noTasksMsg.style.display = 'block';
+                return;
+            }
+            
+            noTasksMsg.style.display = 'none';
+            
+            // عرض كل المهام
+            tasks.forEach(task => {
+                const taskElement = document.createElement('div');
+                taskElement.className = `task-item ${task.completed ? 'completed' : ''}`;
+                
+                const priorityClass = task.priority === 'high' ? 'high' : 
+                                     task.priority === 'medium' ? 'medium' : 'low';
+                const priorityText = task.priority === 'high' ? 'عالي' : 
+                                    task.priority === 'medium' ? 'متوسط' : 'منخفض';
+                
+                taskElement.innerHTML = `
+                    <div class="task-info">
+                        <h3>${task.title} <span class="task-priority ${priorityClass}">${priorityText}</span></h3>
+                        ${task.description ? `<p>${task.description}</p>` : ''}
+                        <small>${task.date}</small>
+                    </div>
+                    <div class="task-actions">
+                        <button onclick="toggleTask(${task.id})">${task.completed ? 'إلغاء الإكمال' : 'تم الإنجاز'}</button>
+                        <button class="delete-btn" onclick="deleteTask(${task.id})">حذف</button>
+                    </div>
+                `;
+                
+                tasksContainer.appendChild(taskElement);
+            });
+        }
+        
+        function toggleTask(taskId) {
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            
+            tasks = tasks.map(task => {
+                if (task.id === taskId) {
+                    task.completed = !task.completed;
+                }
+                return task;
+            });
+            
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            loadTasks();
+        }
+        
+        function deleteTask(taskId) {
+            if (confirm('هل أنت متأكد من أنك تريد حذف هذه المهمة؟')) {
+                let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+                
+                tasks = tasks.filter(task => task.id !== taskId);
+                
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                loadTasks();
+            }
+        }
+        
+        // جعل الدوال متاحة globally لتعمل مع أحداث onClick في HTML
+        window.toggleTask = toggleTask;
+        window.deleteTask = deleteTask;
+    </script>
+</body>
+</html>
