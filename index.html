@@ -3,306 +3,391 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مهمتي اليوم - أداة إدارة المهام</title>
+    <title>مدير المهام الذكي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'night-blue': '#1a1f3a',
+                        'deep-blue': '#2d3561',
+                        'accent-yellow': '#ffd700',
+                        'soft-yellow': '#fff3a0',
+                        'dark-gray': '#2a2a3e'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-            color: #333;
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
+        body { font-family: 'Cairo', sans-serif; }
+        .task-card {
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
         }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            background-color: #4CAF50;
-            color: white;
-            padding: 20px 0;
-            border-radius: 5px;
+        .priority-high { border-right: 4px solid #ef4444; }
+        .priority-medium { border-right: 4px solid #f59e0b; }
+        .priority-low { border-right: 4px solid #10b981; }
+        .completed { opacity: 0.7; }
+        .stats-card {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(45, 53, 97, 0.3));
         }
-        
-        .task-form {
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+        .add-btn {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            transition: all 0.3s ease;
         }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        
-        button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        
-        button:hover {
-            background: #45a049;
-        }
-        
-        .tasks-list {
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .task-item {
-            border-bottom: 1px solid #eee;
-            padding: 15px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .task-item:last-child {
-            border-bottom: none;
-        }
-        
-        .task-info h3 {
-            margin: 0 0 5px 0;
-        }
-        
-        .task-info p {
-            margin: 0;
-            color: #666;
-        }
-        
-        .task-priority {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            color: white;
-            margin-left: 10px;
-        }
-        
-        .high { background: #f44336; }
-        .medium { background: #ff9800; }
-        .low { background: #4CAF50; }
-        
-        .task-actions button {
-            margin-left: 5px;
-            font-size: 14px;
-        }
-        
-        .delete-btn {
-            background: #f44336;
-        }
-        
-        .delete-btn:hover {
-            background: #d32f2f;
-        }
-        
-        .completed {
-            text-decoration: line-through;
-            opacity: 0.7;
-        }
-        
-        @media (max-width: 600px) {
-            .task-item {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .task-actions {
-                margin-top: 10px;
-                align-self: flex-end;
-            }
+        .add-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <h1>مهمتي اليوم</h1>
-            <p>أداة بسيطة لتنظيم وإدارة مهامك اليومية</p>
-        </header>
-        
-        <div class="task-form">
-            <h2>إضافة مهمة جديدة</h2>
-            <form id="addTaskForm">
-                <div class="form-group">
-                    <label for="taskTitle">عنوان المهمة</label>
-                    <input type="text" id="taskTitle" required placeholder="ماذا تريد أن تفعل اليوم؟">
+<body class="bg-gradient-to-br from-night-blue via-deep-blue to-dark-gray min-h-screen text-white">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-deep-blue to-night-blue shadow-2xl">
+        <div class="container mx-auto px-6 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <div class="w-12 h-12 bg-accent-yellow rounded-full flex items-center justify-center">
+                        <span class="text-2xl">📋</span>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-accent-yellow">مدير المهام الذكي</h1>
+                        <p class="text-soft-yellow text-sm">نظم مهامك بذكاء وكفاءة</p>
+                    </div>
                 </div>
-                
-                <div class="form-group">
-                    <label for="taskDescription">وصف المهمة (اختياري)</label>
-                    <textarea id="taskDescription" rows="2" placeholder="تفاصيل إضافية عن المهمة..."></textarea>
+                <div class="text-right">
+                    <div class="text-accent-yellow font-semibold" id="currentDate"></div>
+                    <div class="text-soft-yellow text-sm" id="currentTime"></div>
                 </div>
-                
-                <div class="form-group">
-                    <label for="taskPriority">أولوية المهمة</label>
-                    <select id="taskPriority">
-                        <option value="high">عالية</option>
-                        <option value="medium" selected>متوسطة</option>
-                        <option value="low">منخفضة</option>
-                    </select>
-                </div>
-                
-                <button type="submit">إضافة المهمة</button>
-            </form>
-        </div>
-        
-        <div class="tasks-list">
-            <h2>قائمة المهام</h2>
-            <div id="tasksContainer">
-                <!-- المهام ستضاف هنا dynamically -->
-                <p id="noTasks">لا توجد مهام مضافة yet. أضف مهمتك الأولى!</p>
             </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-6 py-8">
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="stats-card rounded-xl p-6 text-center">
+                <div class="text-3xl font-bold text-accent-yellow" id="totalTasks">0</div>
+                <div class="text-soft-yellow">إجمالي المهام</div>
+            </div>
+            <div class="stats-card rounded-xl p-6 text-center">
+                <div class="text-3xl font-bold text-green-400" id="completedTasks">0</div>
+                <div class="text-soft-yellow">مكتملة</div>
+            </div>
+            <div class="stats-card rounded-xl p-6 text-center">
+                <div class="text-3xl font-bold text-orange-400" id="pendingTasks">0</div>
+                <div class="text-soft-yellow">قيد التنفيذ</div>
+            </div>
+            <div class="stats-card rounded-xl p-6 text-center">
+                <div class="text-3xl font-bold text-red-400" id="highPriorityTasks">0</div>
+                <div class="text-soft-yellow">أولوية عالية</div>
+            </div>
+        </div>
+
+        <!-- Add Task Form -->
+        <div class="bg-gradient-to-r from-deep-blue to-dark-gray rounded-2xl p-8 mb-8 shadow-2xl">
+            <h2 class="text-2xl font-bold text-accent-yellow mb-6 flex items-center">
+                <span class="ml-3">➕</span>
+                إضافة مهمة جديدة
+            </h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-soft-yellow font-semibold mb-2">عنوان المهمة *</label>
+                        <input type="text" id="taskTitle" placeholder="أدخل عنوان المهمة..." 
+                               class="w-full px-4 py-3 bg-night-blue border border-deep-blue rounded-lg text-white placeholder-gray-400 focus:border-accent-yellow focus:outline-none transition-colors">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-soft-yellow font-semibold mb-2">وصف المهمة (اختياري)</label>
+                        <textarea id="taskDescription" placeholder="أضف وصفاً للمهمة..." rows="3"
+                                  class="w-full px-4 py-3 bg-night-blue border border-deep-blue rounded-lg text-white placeholder-gray-400 focus:border-accent-yellow focus:outline-none transition-colors resize-none"></textarea>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-soft-yellow font-semibold mb-2">أولوية المهمة</label>
+                        <select id="taskPriority" class="w-full px-4 py-3 bg-night-blue border border-deep-blue rounded-lg text-white focus:border-accent-yellow focus:outline-none transition-colors">
+                            <option value="high">🔴 عالية</option>
+                            <option value="medium" selected>🟡 متوسطة</option>
+                            <option value="low">🟢 منخفضة</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-soft-yellow font-semibold mb-2">تاريخ الاستحقاق (اختياري)</label>
+                        <input type="date" id="taskDueDate" 
+                               class="w-full px-4 py-3 bg-night-blue border border-deep-blue rounded-lg text-white focus:border-accent-yellow focus:outline-none transition-colors">
+                    </div>
+                    
+                    <button onclick="addTask()" class="add-btn w-full py-3 rounded-lg font-bold text-night-blue text-lg">
+                        ✨ إضافة المهمة
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter and Search -->
+        <div class="bg-gradient-to-r from-deep-blue to-dark-gray rounded-xl p-6 mb-8">
+            <div class="flex flex-col md:flex-row gap-4 items-center">
+                <div class="flex-1">
+                    <input type="text" id="searchTasks" placeholder="🔍 البحث في المهام..." 
+                           class="w-full px-4 py-2 bg-night-blue border border-deep-blue rounded-lg text-white placeholder-gray-400 focus:border-accent-yellow focus:outline-none transition-colors"
+                           oninput="filterTasks()">
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="filterByStatus('all')" class="filter-btn px-4 py-2 rounded-lg bg-accent-yellow text-night-blue font-semibold active">الكل</button>
+                    <button onclick="filterByStatus('pending')" class="filter-btn px-4 py-2 rounded-lg bg-deep-blue text-white font-semibold">قيد التنفيذ</button>
+                    <button onclick="filterByStatus('completed')" class="filter-btn px-4 py-2 rounded-lg bg-deep-blue text-white font-semibold">مكتملة</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks List -->
+        <div class="space-y-4" id="tasksList">
+            <!-- Tasks will be dynamically added here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="text-center py-16 hidden">
+            <div class="text-8xl mb-4">📝</div>
+            <h3 class="text-2xl font-bold text-accent-yellow mb-2">لا توجد مهام حالياً</h3>
+            <p class="text-soft-yellow">ابدأ بإضافة مهمتك الأولى لتنظيم يومك!</p>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // تحميل المهام من localStorage عند تحميل الصفحة
-            loadTasks();
-            
-            // إضافة مهمة جديدة عند submit النموذج
-            document.getElementById('addTaskForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const titleInput = document.getElementById('taskTitle');
-                const descriptionInput = document.getElementById('taskDescription');
-                const prioritySelect = document.getElementById('taskPriority');
-                
-                if (titleInput.value.trim() !== '') {
-                    addTask(titleInput.value, descriptionInput.value, prioritySelect.value);
-                    
-                    // مسح الحقول بعد الإضافة
-                    titleInput.value = '';
-                    descriptionInput.value = '';
-                    prioritySelect.value = 'medium';
-                }
-            });
-        });
-        
-        function addTask(title, description, priority) {
-            // إنشاء كائن المهمة
-            const task = {
-                id: Date.now(), // استخدام timestamp كمعرف فريد
-                title: title,
-                description: description,
-                priority: priority,
-                completed: false,
-                date: new Date().toLocaleDateString('ar-EG')
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let currentFilter = 'all';
+
+        // Update time and date
+        function updateDateTime() {
+            const now = new Date();
+            const dateOptions = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            const timeOptions = { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
             };
             
-            // الحصول على المهام الحالية من localStorage
-            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-            
-            // إضافة المهمة الجديدة
-            tasks.push(task);
-            
-            // حفظ المهام في localStorage
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-            
-            // إعادة تحميل وعرض المهام
-            loadTasks();
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('ar-SA', dateOptions);
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('ar-SA', timeOptions);
         }
-        
-        function loadTasks() {
-            const tasksContainer = document.getElementById('tasksContainer');
-            const noTasksMsg = document.getElementById('noTasks');
-            
-            // الحصول على المهام من localStorage
-            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-            
-            // مسح container المهام
-            tasksContainer.innerHTML = '';
-            
-            if (tasks.length === 0) {
-                tasksContainer.appendChild(noTasksMsg);
-                noTasksMsg.style.display = 'block';
+
+        // Add new task
+        function addTask() {
+            const title = document.getElementById('taskTitle').value.trim();
+            const description = document.getElementById('taskDescription').value.trim();
+            const priority = document.getElementById('taskPriority').value;
+            const dueDate = document.getElementById('taskDueDate').value;
+
+            if (!title) {
+                alert('يرجى إدخال عنوان المهمة');
                 return;
             }
-            
-            noTasksMsg.style.display = 'none';
-            
-            // عرض كل المهام
-            tasks.forEach(task => {
-                const taskElement = document.createElement('div');
-                taskElement.className = `task-item ${task.completed ? 'completed' : ''}`;
-                
-                const priorityClass = task.priority === 'high' ? 'high' : 
-                                     task.priority === 'medium' ? 'medium' : 'low';
-                const priorityText = task.priority === 'high' ? 'عالي' : 
-                                    task.priority === 'medium' ? 'متوسط' : 'منخفض';
-                
-                taskElement.innerHTML = `
-                    <div class="task-info">
-                        <h3>${task.title} <span class="task-priority ${priorityClass}">${priorityText}</span></h3>
-                        ${task.description ? `<p>${task.description}</p>` : ''}
-                        <small>${task.date}</small>
-                    </div>
-                    <div class="task-actions">
-                        <button onclick="toggleTask(${task.id})">${task.completed ? 'إلغاء الإكمال' : 'تم الإنجاز'}</button>
-                        <button class="delete-btn" onclick="deleteTask(${task.id})">حذف</button>
-                    </div>
-                `;
-                
-                tasksContainer.appendChild(taskElement);
-            });
+
+            const task = {
+                id: Date.now(),
+                title,
+                description,
+                priority,
+                dueDate,
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+                completedAt: null
+            };
+
+            tasks.unshift(task);
+            saveTasks();
+            renderTasks();
+            updateStats();
+            clearForm();
         }
-        
-        function toggleTask(taskId) {
-            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-            
-            tasks = tasks.map(task => {
-                if (task.id === taskId) {
-                    task.completed = !task.completed;
-                }
-                return task;
-            });
-            
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-            loadTasks();
+
+        // Clear form
+        function clearForm() {
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskDescription').value = '';
+            document.getElementById('taskPriority').value = 'medium';
+            document.getElementById('taskDueDate').value = '';
         }
-        
-        function deleteTask(taskId) {
-            if (confirm('هل أنت متأكد من أنك تريد حذف هذه المهمة؟')) {
-                let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-                
-                tasks = tasks.filter(task => task.id !== taskId);
-                
-                localStorage.setItem('tasks', JSON.stringify(tasks));
-                loadTasks();
+
+        // Toggle task completion
+        function toggleTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.status = task.status === 'completed' ? 'pending' : 'completed';
+                task.completedAt = task.status === 'completed' ? new Date().toISOString() : null;
+                saveTasks();
+                renderTasks();
+                updateStats();
             }
         }
-        
-        // جعل الدوال متاحة globally لتعمل مع أحداث onClick في HTML
-        window.toggleTask = toggleTask;
-        window.deleteTask = deleteTask;
+
+        // Delete task
+        function deleteTask(id) {
+            if (confirm('هل أنت متأكد من حذف هذه المهمة؟')) {
+                tasks = tasks.filter(t => t.id !== id);
+                saveTasks();
+                renderTasks();
+                updateStats();
+            }
+        }
+
+        // Edit task
+        function editTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                const newTitle = prompt('تعديل عنوان المهمة:', task.title);
+                if (newTitle && newTitle.trim()) {
+                    task.title = newTitle.trim();
+                    saveTasks();
+                    renderTasks();
+                }
+            }
+        }
+
+        // Filter tasks by status
+        function filterByStatus(status) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-accent-yellow', 'text-night-blue');
+                btn.classList.add('bg-deep-blue', 'text-white');
+            });
+            event.target.classList.add('active', 'bg-accent-yellow', 'text-night-blue');
+            event.target.classList.remove('bg-deep-blue', 'text-white');
+            renderTasks();
+        }
+
+        // Filter tasks by search
+        function filterTasks() {
+            renderTasks();
+        }
+
+        // Render tasks
+        function renderTasks() {
+            const searchTerm = document.getElementById('searchTasks').value.toLowerCase();
+            let filteredTasks = tasks;
+
+            // Filter by status
+            if (currentFilter !== 'all') {
+                filteredTasks = filteredTasks.filter(task => task.status === currentFilter);
+            }
+
+            // Filter by search term
+            if (searchTerm) {
+                filteredTasks = filteredTasks.filter(task => 
+                    task.title.toLowerCase().includes(searchTerm) ||
+                    task.description.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            const tasksList = document.getElementById('tasksList');
+            const emptyState = document.getElementById('emptyState');
+
+            if (filteredTasks.length === 0) {
+                tasksList.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            
+            tasksList.innerHTML = filteredTasks.map(task => {
+                const priorityClass = `priority-${task.priority}`;
+                const statusClass = task.status === 'completed' ? 'completed' : '';
+                const priorityEmoji = task.priority === 'high' ? '🔴' : task.priority === 'medium' ? '🟡' : '🟢';
+                const dueDateText = task.dueDate ? new Date(task.dueDate).toLocaleDateString('ar-SA') : '';
+                const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed';
+
+                return `
+                    <div class="task-card ${priorityClass} ${statusClass} bg-gradient-to-r from-deep-blue to-dark-gray rounded-xl p-6 shadow-lg">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <span class="text-lg">${priorityEmoji}</span>
+                                    <h3 class="text-xl font-bold text-white ${task.status === 'completed' ? 'line-through' : ''}">${task.title}</h3>
+                                    ${isOverdue ? '<span class="bg-red-500 text-white px-2 py-1 rounded-full text-xs">متأخر</span>' : ''}
+                                </div>
+                                
+                                ${task.description ? `<p class="text-soft-yellow mb-3">${task.description}</p>` : ''}
+                                
+                                <div class="flex items-center gap-4 text-sm text-gray-300">
+                                    <span>📅 ${new Date(task.createdAt).toLocaleDateString('ar-SA')}</span>
+                                    ${dueDateText ? `<span>⏰ ${dueDateText}</span>` : ''}
+                                    ${task.completedAt ? `<span class="text-green-400">✅ ${new Date(task.completedAt).toLocaleDateString('ar-SA')}</span>` : ''}
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-2 mr-4">
+                                <button onclick="toggleTask(${task.id})" 
+                                        class="px-4 py-2 rounded-lg font-semibold transition-all ${task.status === 'completed' ? 'bg-orange-500 hover:bg-orange-600 text-white' : 'bg-green-500 hover:bg-green-600 text-white'}">
+                                    ${task.status === 'completed' ? '↩️ إلغاء' : '✅ تم'}
+                                </button>
+                                <button onclick="editTask(${task.id})" 
+                                        class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition-all">
+                                    ✏️ تعديل
+                                </button>
+                                <button onclick="deleteTask(${task.id})" 
+                                        class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-all">
+                                    🗑️ حذف
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = tasks.length;
+            const completed = tasks.filter(t => t.status === 'completed').length;
+            const pending = tasks.filter(t => t.status === 'pending').length;
+            const highPriority = tasks.filter(t => t.priority === 'high' && t.status !== 'completed').length;
+
+            document.getElementById('totalTasks').textContent = total;
+            document.getElementById('completedTasks').textContent = completed;
+            document.getElementById('pendingTasks').textContent = pending;
+            document.getElementById('highPriorityTasks').textContent = highPriority;
+        }
+
+        // Save tasks to localStorage
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        // Initialize app
+        function init() {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            renderTasks();
+            updateStats();
+        }
+
+        // Handle Enter key in task title
+        document.getElementById('taskTitle').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        // Initialize when page loads
+        init();
     </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9802fb114195d0ff',t:'MTc1ODA1MzE0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
